@@ -109,6 +109,30 @@ final class ReaderViewModel: ObservableObject {
         }
     }
 
+    func moveToNextChapter() {
+        do {
+            guard readerSession?.selectNextEntry() == true else {
+                return
+            }
+            try saveCurrentPosition(progress: 0)
+            try rebuildReaderDocument()
+        } catch {
+            errorMessage = "Não foi possível carregar o próximo capítulo. \(error.localizedDescription)"
+        }
+    }
+
+    func moveToPreviousChapter() {
+        do {
+            guard readerSession?.selectPreviousEntry() == true else {
+                return
+            }
+            try saveCurrentPosition(progress: 1)
+            try rebuildReaderDocument()
+        } catch {
+            errorMessage = "Não foi possível carregar o capítulo anterior. \(error.localizedDescription)"
+        }
+    }
+
     private func rebuildReaderDocument() throws {
         guard let book = currentBook, let chapter = selectedChapter else {
             renderedChapter = nil

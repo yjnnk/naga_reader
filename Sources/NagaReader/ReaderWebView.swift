@@ -10,9 +10,15 @@ struct ReaderWebView: NSViewRepresentable {
     let chapterHref: String
     let restoredProgress: Double
     let onProgressChanged: (String, Double) -> Void
+    let onNextChapterRequested: () -> Void
+    let onPreviousChapterRequested: () -> Void
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onProgressChanged: onProgressChanged)
+        Coordinator(
+            onProgressChanged: onProgressChanged,
+            onNextChapterRequested: onNextChapterRequested,
+            onPreviousChapterRequested: onPreviousChapterRequested
+        )
     }
 
     func makeNSView(context: Context) -> WKWebView {
@@ -21,7 +27,7 @@ struct ReaderWebView: NSViewRepresentable {
         let webView = PagingWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.onPageTurn = { [weak coordinator = context.coordinator] direction in
-            coordinator?.turnPage(direction)
+            coordinator?.navigate(direction)
         }
         webView.readingMode = readingMode
         context.coordinator.readingMode = readingMode
@@ -64,10 +70,18 @@ struct ReaderWebView: NSViewRepresentable {
         var chapterHref = ""
         var restoredProgress: Double = 0
         private let onProgressChanged: (String, Double) -> Void
+        private let onNextChapterRequested: () -> Void
+        private let onPreviousChapterRequested: () -> Void
         private var notificationObservers: [NSObjectProtocol] = []
 
-        init(onProgressChanged: @escaping (String, Double) -> Void) {
+        init(
+            onProgressChanged: @escaping (String, Double) -> Void,
+            onNextChapterRequested: @escaping () -> Void,
+            onPreviousChapterRequested: @escaping () -> Void
+        ) {
             self.onProgressChanged = onProgressChanged
+            self.onNextChapterRequested = onNextChapterRequested
+            self.onPreviousChapterRequested = onPreviousChapterRequested
         }
 
         func installObservers() {
@@ -79,34 +93,62 @@ struct ReaderWebView: NSViewRepresentable {
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
-                self?.turnPage(.next)
+                self?.navigate(.next)
             })
             notificationObservers.append(NotificationCenter.default.addObserver(
                 forName: .readerPreviousPage,
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
-                self?.turnPage(.previous)
+                self?.navigate(.previous)
             })
         }
 
-        fileprivate func turnPage(_ direction: PageTurnDirection) {
-            guard readingMode == .paged else {
-                return
-            }
+        fileprivate func navigate(_ direction: PageTurnDirection) {
             let multiplier = direction == .next ? 1 : -1
+            let boundary = direction == .next ? "nextChapter" : "previousChapter"
             let script = """
             (function() {
               const reader = document.querySelector('.reader');
-              if (!reader) { return; }
-              const pageAdvance = Math.max(1, reader.clientWidth);
-              const maxLeft = Math.max(0, reader.scrollWidth - reader.clientWidth);
-              const currentPage = Math.round(reader.scrollLeft / pageAdvance);
-              const targetLeft = Math.max(0, Math.min(maxLeft, (currentPage + \(multiplier)) * pageAdvance));
-              reader.scrollTo({ left: targetLeft, top: 0, behavior: 'auto' });
+              if (!reader) { return 'none'; }
+              const isPaged = getComputedStyle(reader).columnWidth !== 'auto';
+              if (isPaged) {
+                const pageAdvance = Math.max(1, reader.clientWidth);
+                const maxLeft = Math.max(0, reader.scrollWidth - reader.clientWidth);
+                const currentPage = Math.round(reader.scrollLeft / pageAdvance);
+                const targetPage = currentPage + \(multiplier);
+                const targetLeft = Math.max(0, Math.min(maxLeft, targetPage * pageAdvance));
+                if (targetLeft === reader.scrollLeft && targetPage !== currentPage) {
+                  return '\(boundary)';
+                }
+                reader.scrollTo({ left: targetLeft, top: 0, behavior: 'auto' });
+                return 'moved';
+              }
+
+              const pageAdvance = Math.max(1, window.innerHeight * 0.85);
+              const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+              const currentTop = window.scrollY;
+              const targetTop = Math.max(0, Math.min(maxTop, currentTop + (\(multiplier) * pageAdvance)));
+              if (Math.abs(targetTop - currentTop) < 1) {
+                return '\(boundary)';
+              }
+              window.scrollTo({ top: targetTop, left: 0, behavior: 'auto' });
+              return 'moved';
             })();
             """
-            webView?.evaluateJavaScript(script)
+            webView?.evaluateJavaScript(script) { [weak self] result, _ in
+                guard let result = result as? String else {
+                    return
+                }
+                switch result {
+                case "nextChapter":
+                    self?.onNextChapterRequested()
+                case "previousChapter":
+                    self?.onPreviousChapterRequested()
+                default:
+                    break
+                }
+            }
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -222,15 +264,14 @@ private final class PagingWebView: WKWebView {
     }
 
     override func keyDown(with event: NSEvent) {
-        guard readingMode == .paged else {
-            super.keyDown(with: event)
-            return
-        }
-
         switch event.keyCode {
-        case KeyCode.leftArrow:
+        case KeyCode.rightArrow, KeyCode.downArrow, KeyCode.pageDown:
+            onPageTurn?(.next)
+        case KeyCode.leftArrow, KeyCode.upArrow, KeyCode.pageUp:
             onPageTurn?(.previous)
-        case KeyCode.rightArrow, KeyCode.space:
+        case KeyCode.space where event.modifierFlags.contains(.shift):
+            onPageTurn?(.previous)
+        case KeyCode.space:
             onPageTurn?(.next)
         default:
             super.keyDown(with: event)
@@ -241,7 +282,11 @@ private final class PagingWebView: WKWebView {
 private enum KeyCode {
     static let leftArrow: UInt16 = 123
     static let rightArrow: UInt16 = 124
+    static let downArrow: UInt16 = 125
+    static let upArrow: UInt16 = 126
     static let space: UInt16 = 49
+    static let pageUp: UInt16 = 116
+    static let pageDown: UInt16 = 121
 }
 
 extension Notification.Name {

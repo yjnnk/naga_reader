@@ -111,4 +111,42 @@ final class ReaderSessionTests: XCTestCase {
 
         XCTAssertEqual(session.selectedChapter, first)
     }
+
+    func testMovingToNextEntrySelectsNextChapterUntilEnd() {
+        let first = EPUBChapter(title: "Chapter One", href: "chapters/one.xhtml")
+        let second = EPUBChapter(title: "Chapter Two", href: "chapters/two.xhtml")
+        let book = ImportedBookRecord(
+            id: "book",
+            title: "Book",
+            originalFileName: "Book.epub",
+            storedURL: URL(fileURLWithPath: "/tmp/Book.epub"),
+            chapters: [first, second]
+        )
+        var session = ReaderSession.open(book)
+
+        XCTAssertTrue(session.selectNextEntry())
+        XCTAssertEqual(session.selectedChapter, second)
+        XCTAssertFalse(session.selectNextEntry())
+        XCTAssertEqual(session.selectedChapter, second)
+    }
+
+    func testMovingToPreviousEntrySelectsPreviousChapterUntilBeginning() {
+        let first = EPUBChapter(title: "Chapter One", href: "chapters/one.xhtml")
+        let second = EPUBChapter(title: "Chapter Two", href: "chapters/two.xhtml")
+        let book = ImportedBookRecord(
+            id: "book",
+            title: "Book",
+            originalFileName: "Book.epub",
+            storedURL: URL(fileURLWithPath: "/tmp/Book.epub"),
+            chapters: [first, second]
+        )
+        var session = ReaderSession.open(book)
+
+        session.selectEntry(id: 1)
+
+        XCTAssertTrue(session.selectPreviousEntry())
+        XCTAssertEqual(session.selectedChapter, first)
+        XCTAssertFalse(session.selectPreviousEntry())
+        XCTAssertEqual(session.selectedChapter, first)
+    }
 }

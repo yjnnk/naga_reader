@@ -42,6 +42,36 @@ public struct ReaderSession: Equatable {
         selectedEntryID = id
     }
 
+    @discardableResult
+    public mutating func selectNextEntry() -> Bool {
+        guard let selectedEntryID else {
+            return false
+        }
+
+        let nextEntryID = selectedEntryID + 1
+        guard tableOfContents.contains(where: { $0.id == nextEntryID }) else {
+            return false
+        }
+
+        self.selectedEntryID = nextEntryID
+        return true
+    }
+
+    @discardableResult
+    public mutating func selectPreviousEntry() -> Bool {
+        guard let selectedEntryID else {
+            return false
+        }
+
+        let previousEntryID = selectedEntryID - 1
+        guard tableOfContents.contains(where: { $0.id == previousEntryID }) else {
+            return false
+        }
+
+        self.selectedEntryID = previousEntryID
+        return true
+    }
+
     private static func tableOfContents(for book: ImportedBookRecord) -> [TableOfContentsEntry] {
         let chapters: [EPUBChapter] = book.chapters.isEmpty
             ? book.spineHrefs.map { EPUBChapter(title: fallbackTitle(for: $0), href: $0) }
