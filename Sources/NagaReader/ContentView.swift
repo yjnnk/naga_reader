@@ -18,6 +18,26 @@ struct ContentView: View {
                     }
                 }
 
+                if !viewModel.tableOfContents.isEmpty {
+                    Section("Sumário") {
+                        ForEach(viewModel.tableOfContents) { entry in
+                            Button {
+                                viewModel.selectTableOfContentsEntry(id: entry.id)
+                            } label: {
+                                HStack {
+                                    Text(entry.chapter.title)
+                                    Spacer()
+                                    if viewModel.isSelectedTableOfContentsEntry(entry) {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
                 if !viewModel.library.recentBooks.isEmpty {
                     Section("Recentes") {
                         ForEach(viewModel.library.recentBooks) { book in
@@ -30,9 +50,9 @@ struct ContentView: View {
             .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 320)
         } detail: {
             VStack(spacing: 16) {
-                Text(state.readerTitle)
+                Text(viewModel.selectedChapter?.title ?? state.readerTitle)
                     .font(.title)
-                Text(state.readerMessage)
+                Text(detailMessage)
                     .foregroundStyle(.secondary)
                 OpenEPUBButton()
             }
@@ -58,6 +78,18 @@ struct ContentView: View {
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )
+    }
+
+    private var detailMessage: String {
+        guard viewModel.readerSession != nil else {
+            return state.readerMessage
+        }
+
+        guard let selected = viewModel.selectedChapter else {
+            return "Este EPUB não tem capítulos navegáveis."
+        }
+
+        return "Capítulo ativo: \(selected.href). A renderização do conteúdo entra no próximo ticket."
     }
 }
 
