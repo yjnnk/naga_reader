@@ -4,10 +4,10 @@
 
 **Blocked by:** 01 — Scaffold do app macOS com janela de leitura vazia.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O usuário consegue escolher um arquivo `.epub` local pelo app.
-- [ ] O app copia o arquivo escolhido para armazenamento local controlado pelo app.
-- [ ] O app registra o livro importado como livro atual.
-- [ ] O app mantém dados suficientes para reconhecer o livro em aberturas futuras.
-- [ ] Erros de importação são apresentados de forma clara.
+- [x] O usuário consegue escolher um arquivo `.epub` local pelo app.
+- [x] O app copia o arquivo escolhido para armazenamento local controlado pelo app.
+- [x] O app registra o livro importado como livro atual.
+- [x] O app mantém dados suficientes para reconhecer o livro em aberturas futuras.
+- [x] Erros de importação são apresentados de forma clara.
