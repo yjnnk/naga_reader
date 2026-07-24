@@ -26,9 +26,12 @@ public struct ReaderSession: Equatable {
         return tableOfContents.first { $0.id == selectedEntryID }?.chapter
     }
 
-    public static func open(_ book: ImportedBookRecord) -> ReaderSession {
+    public static func open(_ book: ImportedBookRecord, position: ReadingPosition? = nil) -> ReaderSession {
         let entries = tableOfContents(for: book)
-        return ReaderSession(currentBook: book, selectedEntryID: entries.first?.id)
+        let restoredEntryID = position.flatMap { savedPosition in
+            entries.first { $0.chapter.href == savedPosition.chapterHref }?.id
+        }
+        return ReaderSession(currentBook: book, selectedEntryID: restoredEntryID ?? entries.first?.id)
     }
 
     public mutating func selectEntry(id: Int) {

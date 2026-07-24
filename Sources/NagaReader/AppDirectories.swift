@@ -20,4 +20,8 @@ struct AppDirectories {
     var settings: URL {
         base.appendingPathComponent("settings.json")
     }
+
+    var readingPositions: URL {
+        base.appendingPathComponent("reading-positions.json")
+    }
 }

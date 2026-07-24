@@ -37,6 +37,43 @@ final class ReaderSessionTests: XCTestCase {
         XCTAssertEqual(session.selectedChapter, second)
     }
 
+    func testOpeningBookRestoresChapterFromSavedPosition() {
+        let first = EPUBChapter(title: "Chapter One", href: "chapters/one.xhtml")
+        let second = EPUBChapter(title: "Chapter Two", href: "chapters/two.xhtml")
+        let book = ImportedBookRecord(
+            id: "book",
+            title: "Book",
+            originalFileName: "Book.epub",
+            storedURL: URL(fileURLWithPath: "/tmp/Book.epub"),
+            chapters: [first, second]
+        )
+
+        let session = ReaderSession.open(
+            book,
+            position: ReadingPosition(chapterHref: "chapters/two.xhtml", progress: 0.4)
+        )
+
+        XCTAssertEqual(session.selectedChapter, second)
+    }
+
+    func testOpeningBookIgnoresSavedPositionForUnknownChapter() {
+        let first = EPUBChapter(title: "Chapter One", href: "chapters/one.xhtml")
+        let book = ImportedBookRecord(
+            id: "book",
+            title: "Book",
+            originalFileName: "Book.epub",
+            storedURL: URL(fileURLWithPath: "/tmp/Book.epub"),
+            chapters: [first]
+        )
+
+        let session = ReaderSession.open(
+            book,
+            position: ReadingPosition(chapterHref: "missing.xhtml", progress: 0.4)
+        )
+
+        XCTAssertEqual(session.selectedChapter, first)
+    }
+
     func testBookWithoutRichTableOfContentsFallsBackToSpineHrefs() {
         let book = ImportedBookRecord(
             id: "book",

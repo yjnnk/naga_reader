@@ -25,6 +25,7 @@ final class ReaderViewModel: ObservableObject {
     private let importer: EPUBImporter
     private let libraryStore: LibraryStore
     private let readingSettingsStore: ReadingSettingsStore
+    private let readingPositionStore: ReadingPositionStore
     private let parser = EPUBParser()
     private let documentBuilder = ReadingDocumentBuilder()
 
@@ -32,6 +33,7 @@ final class ReaderViewModel: ObservableObject {
         self.importer = EPUBImporter(storageDirectory: directories.books)
         self.libraryStore = LibraryStore(fileURL: directories.library)
         self.readingSettingsStore = ReadingSettingsStore(fileURL: directories.settings)
+        self.readingPositionStore = ReadingPositionStore(fileURL: directories.readingPositions)
     }
 
     func load() {
@@ -41,7 +43,9 @@ final class ReaderViewModel: ObservableObject {
             let currentBook = library.currentBookID.flatMap { currentID in
                 library.recentBooks.first { $0.id == currentID }
             }
-            readerSession = currentBook.map(ReaderSession.open)
+            if let currentBook {
+                readerSession = try openSession(for: currentBook)
+            }
             try rebuildReaderDocument()
         } catch {
             errorMessage = "Não foi possível carregar a biblioteca local. \(error.localizedDescription)"
@@ -53,7 +57,7 @@ final class ReaderViewModel: ObservableObject {
             let book = try importer.importBook(from: sourceURL)
             try libraryStore.recordImportedBook(book)
             library = try libraryStore.load()
-            readerSession = ReaderSession.open(book)
+            readerSession = try openSession(for: book)
             try rebuildReaderDocument()
         } catch {
             errorMessage = "Não foi possível importar este EPUB. \(error.localizedDescription)"
@@ -63,6 +67,7 @@ final class ReaderViewModel: ObservableObject {
     func selectTableOfContentsEntry(id: Int) {
         readerSession?.selectEntry(id: id)
         do {
+            try saveCurrentPosition(progress: 0)
             try rebuildReaderDocument()
         } catch {
             errorMessage = "Não foi possível carregar este capítulo. \(error.localizedDescription)"
@@ -83,6 +88,14 @@ final class ReaderViewModel: ObservableObject {
         }
     }
 
+    func updateReadingProgress(chapterHref: String, progress: Double) {
+        do {
+            try saveCurrentPosition(chapterHref: chapterHref, progress: progress)
+        } catch {
+            errorMessage = "Não foi possível salvar a posição de leitura. \(error.localizedDescription)"
+        }
+    }
+
     private func rebuildReaderDocument() throws {
         guard let book = currentBook, let chapter = selectedChapter else {
             renderedChapter = nil
@@ -94,9 +107,39 @@ final class ReaderViewModel: ObservableObject {
             .appendingPathComponent("extracted", isDirectory: true)
         let parsed = try parser.parse(epubURL: book.storedURL, extractingTo: extractionURL)
         let content = try ChapterContentLoader(parsedEPUB: parsed).loadChapterBody(href: chapter.href)
+        let savedPosition = try readingPositionStore.position(for: book.id)
+        let restoredProgress = savedPosition?.chapterHref == chapter.href ? savedPosition?.progress ?? 0 : 0
         renderedChapter = RenderedChapter(
+            chapterHref: chapter.href,
             html: documentBuilder.buildDocument(chapterBody: content.body, settings: readingSettings),
-            baseURL: content.baseURL
+            baseURL: content.baseURL,
+            restoredProgress: restoredProgress
+        )
+    }
+
+    private func openSession(for book: ImportedBookRecord) throws -> ReaderSession {
+        try ReaderSession.open(book, position: readingPositionStore.position(for: book.id))
+    }
+
+    private func saveCurrentPosition(progress: Double) throws {
+        guard let chapterHref = selectedChapter?.href else {
+            return
+        }
+
+        try saveCurrentPosition(chapterHref: chapterHref, progress: progress)
+    }
+
+    private func saveCurrentPosition(chapterHref: String, progress: Double) throws {
+        guard let book = currentBook, let chapter = selectedChapter else {
+            return
+        }
+        guard chapter.href == chapterHref else {
+            return
+        }
+
+        try readingPositionStore.save(
+            ReadingPosition(chapterHref: chapter.href, progress: progress),
+            for: book.id
         )
     }
 }

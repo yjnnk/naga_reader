@@ -4,10 +4,10 @@
 
 **Blocked by:** 07 — Adicionar paginação simples como modo padrão; 08 — Adicionar modo de rolagem contínua configurável.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O app salva a posição de leitura separadamente para cada livro.
-- [ ] A posição inclui capítulo atual e localização suficiente para retomar leitura.
-- [ ] Reabrir um livro restaura a posição salva.
-- [ ] A persistência funciona para paginação e rolagem contínua.
-- [ ] O armazenamento de posição é testável sem depender de WKWebView real.
+- [x] O app salva a posição de leitura separadamente para cada livro.
+- [x] A posição inclui capítulo atual e localização suficiente para retomar leitura.
+- [x] Reabrir um livro restaura a posição salva.
+- [x] A persistência funciona para paginação e rolagem contínua.
+- [x] O armazenamento de posição é testável sem depender de WKWebView real.

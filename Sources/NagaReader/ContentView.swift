@@ -190,7 +190,10 @@ struct ReaderDetailView: View {
                 ReaderWebView(
                     html: renderedChapter.html,
                     baseURL: renderedChapter.baseURL,
-                    readingMode: viewModel.readingSettings.readingMode
+                    readingMode: viewModel.readingSettings.readingMode,
+                    chapterHref: renderedChapter.chapterHref,
+                    restoredProgress: renderedChapter.restoredProgress,
+                    onProgressChanged: viewModel.updateReadingProgress
                 )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 if viewModel.readingSettings.readingMode == .paged {
