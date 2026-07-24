@@ -53,8 +53,9 @@ struct ContentView: View {
         }
         .frame(minWidth: 900, minHeight: 640)
         .toolbar {
-            ToolbarItem {
+            ToolbarItemGroup {
                 OpenEPUBButton()
+                ReadingSettingsMenu()
             }
         }
         .alert("Naga Reader", isPresented: errorBinding) {
@@ -83,6 +84,84 @@ struct ContentView: View {
         }
 
         return "Capítulo ativo: \(selected.href). A renderização do conteúdo entra no próximo ticket."
+    }
+}
+
+struct ReadingSettingsMenu: View {
+    @EnvironmentObject private var viewModel: ReaderViewModel
+
+    var body: some View {
+        Menu {
+            Picker("Tema", selection: themeBinding) {
+                Text("Claro").tag(ReadingTheme.light)
+                Text("Escuro").tag(ReadingTheme.dark)
+                Text("Sépia").tag(ReadingTheme.sepia)
+            }
+
+            Divider()
+
+            Stepper("Largura: \(viewModel.readingSettings.columnWidth) px", value: columnWidthBinding, in: 420...960, step: 20)
+            Stepper("Margem: \(viewModel.readingSettings.pageMargin) px", value: marginBinding, in: 24...160, step: 8)
+            Stepper("Fonte: \(viewModel.readingSettings.fontSize) px", value: fontSizeBinding, in: 14...32, step: 1)
+            Stepper("Linha: \(String(format: "%.2g", viewModel.readingSettings.lineHeight))", value: lineHeightBinding, in: 1.2...2.0, step: 0.05)
+        } label: {
+            Label("Aparência", systemImage: "textformat.size")
+        }
+    }
+
+    private var themeBinding: Binding<ReadingTheme> {
+        Binding(
+            get: { viewModel.readingSettings.theme },
+            set: { theme in
+                viewModel.updateReadingSettings { settings in
+                    settings.with(theme: theme)
+                }
+            }
+        )
+    }
+
+    private var columnWidthBinding: Binding<Int> {
+        Binding(
+            get: { viewModel.readingSettings.columnWidth },
+            set: { value in
+                viewModel.updateReadingSettings { settings in
+                    settings.with(columnWidth: value)
+                }
+            }
+        )
+    }
+
+    private var marginBinding: Binding<Int> {
+        Binding(
+            get: { viewModel.readingSettings.pageMargin },
+            set: { value in
+                viewModel.updateReadingSettings { settings in
+                    settings.with(pageMargin: value)
+                }
+            }
+        )
+    }
+
+    private var fontSizeBinding: Binding<Int> {
+        Binding(
+            get: { viewModel.readingSettings.fontSize },
+            set: { value in
+                viewModel.updateReadingSettings { settings in
+                    settings.with(fontSize: value)
+                }
+            }
+        )
+    }
+
+    private var lineHeightBinding: Binding<Double> {
+        Binding(
+            get: { viewModel.readingSettings.lineHeight },
+            set: { value in
+                viewModel.updateReadingSettings { settings in
+                    settings.with(lineHeight: value)
+                }
+            }
+        )
     }
 }
 

@@ -4,10 +4,10 @@
 
 **Blocked by:** 05 — Renderizar capítulo em WKWebView com layout centralizado.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O app oferece controles para largura da coluna, margens, tamanho da fonte, altura da linha e tema.
-- [ ] Alterar uma configuração atualiza a renderização do capítulo atual.
-- [ ] As configurações são globais, não por livro.
-- [ ] As configurações persistem entre execuções do app.
-- [ ] A transformação de configurações em documento de leitura é testável sem depender da UI.
+- [x] O app oferece controles para largura da coluna, margens, tamanho da fonte, altura da linha e tema.
+- [x] Alterar uma configuração atualiza a renderização do capítulo atual.
+- [x] As configurações são globais, não por livro.
+- [x] As configurações persistem entre execuções do app.
+- [x] A transformação de configurações em documento de leitura é testável sem depender da UI.

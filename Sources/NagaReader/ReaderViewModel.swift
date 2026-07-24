@@ -7,6 +7,7 @@ final class ReaderViewModel: ObservableObject {
     @Published private(set) var library = LibraryState.empty
     @Published private(set) var readerSession: ReaderSession?
     @Published private(set) var renderedChapter: RenderedChapter?
+    @Published private(set) var readingSettings = ReadingSettings.default
     @Published var errorMessage: String?
 
     var currentBook: ImportedBookRecord? {
@@ -23,17 +24,20 @@ final class ReaderViewModel: ObservableObject {
 
     private let importer: EPUBImporter
     private let libraryStore: LibraryStore
+    private let readingSettingsStore: ReadingSettingsStore
     private let parser = EPUBParser()
     private let documentBuilder = ReadingDocumentBuilder()
 
     init(directories: AppDirectories = .live) {
         self.importer = EPUBImporter(storageDirectory: directories.books)
         self.libraryStore = LibraryStore(fileURL: directories.library)
+        self.readingSettingsStore = ReadingSettingsStore(fileURL: directories.settings)
     }
 
     func load() {
         do {
             library = try libraryStore.load()
+            readingSettings = try readingSettingsStore.load()
             let currentBook = library.currentBookID.flatMap { currentID in
                 library.recentBooks.first { $0.id == currentID }
             }
@@ -69,6 +73,16 @@ final class ReaderViewModel: ObservableObject {
         readerSession?.selectedEntryID == entry.id
     }
 
+    func updateReadingSettings(_ update: (ReadingSettings) -> ReadingSettings) {
+        readingSettings = update(readingSettings)
+        do {
+            try readingSettingsStore.save(readingSettings)
+            try rebuildReaderDocument()
+        } catch {
+            errorMessage = "Não foi possível salvar as configurações de leitura. \(error.localizedDescription)"
+        }
+    }
+
     private func rebuildReaderDocument() throws {
         guard let book = currentBook, let chapter = selectedChapter else {
             renderedChapter = nil
@@ -81,7 +95,7 @@ final class ReaderViewModel: ObservableObject {
         let parsed = try parser.parse(epubURL: book.storedURL, extractingTo: extractionURL)
         let content = try ChapterContentLoader(parsedEPUB: parsed).loadChapterBody(href: chapter.href)
         renderedChapter = RenderedChapter(
-            html: documentBuilder.buildDocument(chapterBody: content.body),
+            html: documentBuilder.buildDocument(chapterBody: content.body, settings: readingSettings),
             baseURL: content.baseURL
         )
     }

@@ -16,4 +16,8 @@ struct AppDirectories {
     var library: URL {
         base.appendingPathComponent("library.json")
     }
+
+    var settings: URL {
+        base.appendingPathComponent("settings.json")
+    }
 }

@@ -3,8 +3,10 @@ import Foundation
 public struct ReadingDocumentBuilder {
     public init() {}
 
-    public func buildDocument(chapterBody: String) -> String {
-        """
+    public func buildDocument(chapterBody: String, settings: ReadingSettings = .default) -> String {
+        let colors = ThemeColors(theme: settings.theme)
+
+        return """
         <!doctype html>
         <html>
         <head>
@@ -13,19 +15,19 @@ public struct ReadingDocumentBuilder {
           <style>
             body {
               margin: 0;
-              background: #f4ecd8;
-              color: #2c2418;
-              font: 19px -apple-system, BlinkMacSystemFont, "New York", Georgia, serif;
-              line-height: 1.55;
+              background: \(colors.background);
+              color: \(colors.text);
+              font: \(settings.fontSize)px -apple-system, BlinkMacSystemFont, "New York", Georgia, serif;
+              line-height: \(format(settings.lineHeight));
             }
             .reader {
               box-sizing: border-box;
-              max-width: 680px;
+              max-width: \(settings.columnWidth)px;
               margin: 0 auto;
-              padding: 72px;
+              padding: \(settings.pageMargin)px;
               overflow-x: hidden;
             }
-            .reader, .reader * {
+            .reader * {
               box-sizing: border-box;
               max-width: 100% !important;
               overflow-wrap: break-word;
@@ -48,5 +50,28 @@ public struct ReadingDocumentBuilder {
         </body>
         </html>
         """
+    }
+
+    private func format(_ value: Double) -> String {
+        String(format: "%.2g", value)
+    }
+}
+
+private struct ThemeColors {
+    let background: String
+    let text: String
+
+    init(theme: ReadingTheme) {
+        switch theme {
+        case .light:
+            background = "#fbfbf8"
+            text = "#1d1d1f"
+        case .dark:
+            background = "#101114"
+            text = "#e7e1d7"
+        case .sepia:
+            background = "#f4ecd8"
+            text = "#2c2418"
+        }
     }
 }
