@@ -9,7 +9,7 @@ public struct AppShellState: Equatable {
     public static let empty = AppShellState(
         sidebarTitle: "Sumário",
         readerTitle: "Naga Reader",
-        readerMessage: "Abra um EPUB para iniciar a leitura.",
+        readerMessage: "Abra um EPUB local para começar. O livro fica salvo neste Mac e reabre na última posição.",
         canShowTableOfContents: false
     )
 

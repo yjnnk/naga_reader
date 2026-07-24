@@ -74,11 +74,11 @@ public enum EPUBImportError: Error, Equatable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .unsupportedFileType:
-            return "Only EPUB files are supported."
+            return "Apenas arquivos EPUB são suportados."
         case .couldNotCopyBook:
-            return "Could not copy the EPUB into app storage."
+            return "Não foi possível copiar o EPUB para o armazenamento local do app."
         case .couldNotReadBook:
-            return "Could not read the imported EPUB."
+            return "Não foi possível ler este EPUB."
         }
     }
 }

@@ -59,7 +59,7 @@ final class ReaderViewModel: ObservableObject {
             readerSession = try openSession(for: book)
             try rebuildReaderDocument()
         } catch {
-            errorMessage = "Não foi possível importar este EPUB. \(error.localizedDescription)"
+            errorMessage = readableImportMessage(for: error)
         }
     }
 
@@ -159,6 +159,14 @@ final class ReaderViewModel: ObservableObject {
             renderedChapter = nil
         }
         errorMessage = message
+    }
+
+    private func readableImportMessage(for error: Error) -> String {
+        if let localized = (error as? LocalizedError)?.errorDescription {
+            return localized
+        }
+
+        return "Não foi possível importar este EPUB. \(error.localizedDescription)"
     }
 
     private func saveCurrentPosition(progress: Double) throws {

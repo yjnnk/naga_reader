@@ -63,17 +63,17 @@ public enum EPUBParseError: Error, Equatable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .invalidContainer:
-            return "The EPUB container could not be read."
+            return "Este EPUB parece inválido: o container não pôde ser lido."
         case .invalidPackage:
-            return "The EPUB package document could not be read."
+            return "Este EPUB parece inválido: o pacote principal não pôde ser lido."
         case .unresolvedSpineItem(let idref):
-            return "The EPUB spine references a missing manifest item: \(idref)."
+            return "Este EPUB parece inválido: o item de leitura \(idref) não existe no manifesto."
         case .missingSpine:
-            return "The EPUB does not declare a readable spine."
+            return "Este EPUB não declara uma sequência de leitura."
         case .unsupportedFixedLayout:
-            return "Fixed-layout EPUBs are not supported yet."
+            return "EPUBs de layout fixo ainda não são suportados. Use EPUBs reflowable."
         case .couldNotExtractArchive:
-            return "The EPUB archive could not be extracted."
+            return "Este arquivo EPUB não pôde ser extraído."
         }
     }
 }

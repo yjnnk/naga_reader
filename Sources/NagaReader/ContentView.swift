@@ -11,7 +11,13 @@ struct ContentView: View {
             List {
                 Section("Livro atual") {
                     if let book = viewModel.currentBook {
-                        Text(book.title)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(book.title)
+                                .font(.headline)
+                            Text(book.originalFileName)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     } else {
                         Text("Nenhum livro aberto")
                             .foregroundStyle(.secondary)
@@ -95,7 +101,7 @@ struct ContentView: View {
             return "Este EPUB não tem capítulos navegáveis."
         }
 
-        return "Capítulo ativo: \(selected.href). A renderização do conteúdo entra no próximo ticket."
+        return "Não foi possível renderizar \(selected.title). Tente outro EPUB reflowable."
     }
 }
 
@@ -214,14 +220,20 @@ struct ReaderDetailView: View {
                 }
             }
         } else {
-            VStack(spacing: 16) {
+            VStack(spacing: 18) {
+                Image(systemName: "book")
+                    .font(.system(size: 44, weight: .light))
+                    .foregroundStyle(.secondary)
                 Text(viewModel.selectedChapter?.title ?? state.readerTitle)
-                    .font(.title)
+                    .font(.title2.weight(.semibold))
                 Text(detailMessage)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 420)
                 OpenEPUBButton()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(40)
         }
     }
 
@@ -234,7 +246,7 @@ struct ReaderDetailView: View {
             return "Este EPUB não tem capítulos navegáveis."
         }
 
-        return "Capítulo ativo: \(selected.href)."
+        return "Não foi possível renderizar \(selected.title). Tente outro EPUB reflowable."
     }
 }
 
