@@ -119,6 +119,11 @@ struct ReadingSettingsMenu: View {
                 Text("Paginação").tag(ReadingMode.paged)
                 Text("Rolagem").tag(ReadingMode.scroll)
             }
+            Picker("Fonte", selection: fontFamilyBinding) {
+                ForEach(ReadingFontFamily.allCases) { fontFamily in
+                    Text(fontFamily.displayName).tag(fontFamily)
+                }
+            }
 
             Divider()
 
@@ -148,6 +153,17 @@ struct ReadingSettingsMenu: View {
             set: { mode in
                 viewModel.updateReadingSettings { settings in
                     settings.with(readingMode: mode)
+                }
+            }
+        )
+    }
+
+    private var fontFamilyBinding: Binding<ReadingFontFamily> {
+        Binding(
+            get: { viewModel.readingSettings.fontFamily },
+            set: { fontFamily in
+                viewModel.updateReadingSettings { settings in
+                    settings.with(fontFamily: fontFamily)
                 }
             }
         )

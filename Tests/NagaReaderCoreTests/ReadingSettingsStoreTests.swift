@@ -16,7 +16,8 @@ final class ReadingSettingsStoreTests: XCTestCase {
             fontSize: 21,
             lineHeight: 1.7,
             theme: .dark,
-            readingMode: .scroll
+            readingMode: .scroll,
+            fontFamily: .georgia
         )
 
         try store.save(settings)
@@ -24,7 +25,7 @@ final class ReadingSettingsStoreTests: XCTestCase {
         XCTAssertEqual(try store.load(), settings)
     }
 
-    func testLoadsSettingsWrittenBeforeReadingModeExisted() throws {
+    func testLoadsSettingsWrittenBeforeReadingModeAndFontFamilyExisted() throws {
         let fileURL = temporaryJSONURL()
         let legacyJSON = """
         {
@@ -46,7 +47,8 @@ final class ReadingSettingsStoreTests: XCTestCase {
                 fontSize: 20,
                 lineHeight: 1.6,
                 theme: .dark,
-                readingMode: .paged
+                readingMode: .paged,
+                fontFamily: .system
             )
         )
     }

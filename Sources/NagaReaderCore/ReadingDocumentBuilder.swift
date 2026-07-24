@@ -18,7 +18,7 @@ public struct ReadingDocumentBuilder {
               margin: 0;
               background: \(colors.background);
               color: \(colors.text);
-              font: \(settings.fontSize)px -apple-system, BlinkMacSystemFont, "New York", Georgia, serif;
+              font: \(settings.fontSize)px \(settings.fontFamily.cssFontStack);
               line-height: \(format(settings.lineHeight));
               \(layout.bodyOverflow)
             }

@@ -9,7 +9,8 @@ final class ReadingDocumentBuilderTests: XCTestCase {
             fontSize: 21,
             lineHeight: 1.7,
             theme: .dark,
-            readingMode: .paged
+            readingMode: .paged,
+            fontFamily: .palatino
         )
         let html = ReadingDocumentBuilder().buildDocument(
             chapterBody: "<h1>Chapter One</h1><p style=\"width:100vw\">Hello</p><img src=\"image.png\">",
@@ -20,6 +21,7 @@ final class ReadingDocumentBuilderTests: XCTestCase {
         XCTAssertTrue(html.contains("max-width: 620px;"))
         XCTAssertTrue(html.contains("padding: 88px;"))
         XCTAssertTrue(html.contains("font: 21px"))
+        XCTAssertTrue(html.contains("\"Palatino\", \"Palatino Linotype\", Georgia, serif;"))
         XCTAssertTrue(html.contains("line-height: 1.7;"))
         XCTAssertTrue(html.contains("background: #101114;"))
         XCTAssertTrue(html.contains("margin: 0 auto;"))
@@ -62,5 +64,14 @@ final class ReadingDocumentBuilderTests: XCTestCase {
         XCTAssertTrue(html.contains("min-height: calc(100vh - 144px);"))
         XCTAssertFalse(html.contains("column-width: 680px;"))
         XCTAssertTrue(html.contains("max-width: 680px;"))
+    }
+
+    func testDocumentAppliesConfiguredFontFallbackStack() {
+        let html = ReadingDocumentBuilder().buildDocument(
+            chapterBody: "<p>Hello</p>",
+            settings: .default.with(fontFamily: .menlo)
+        )
+
+        XCTAssertTrue(html.contains("font: 19px Menlo, Monaco, Consolas, monospace;"))
     }
 }
