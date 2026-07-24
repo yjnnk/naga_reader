@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import WebKit
 
@@ -10,9 +11,15 @@ struct ReaderWebView: NSViewRepresentable {
     }
 
     func makeNSView(context: Context) -> WKWebView {
-        let webView = WKWebView()
+        let webView = PagingWebView()
+        webView.navigationDelegate = context.coordinator
+        webView.onPageTurn = { [weak coordinator = context.coordinator] direction in
+            coordinator?.turnPage(direction)
+        }
         context.coordinator.loadedHTML = html
         context.coordinator.loadedBaseURL = baseURL
+        context.coordinator.webView = webView
+        context.coordinator.installObservers()
         webView.loadHTMLString(html, baseURL: baseURL)
         return webView
     }
@@ -27,8 +34,85 @@ struct ReaderWebView: NSViewRepresentable {
         webView.loadHTMLString(html, baseURL: baseURL)
     }
 
-    final class Coordinator {
+    final class Coordinator: NSObject, WKNavigationDelegate {
+        weak var webView: WKWebView?
         var loadedHTML: String?
         var loadedBaseURL: URL?
+        private var notificationObservers: [NSObjectProtocol] = []
+
+        func installObservers() {
+            guard notificationObservers.isEmpty else {
+                return
+            }
+            notificationObservers.append(NotificationCenter.default.addObserver(
+                forName: .readerNextPage,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                self?.turnPage(.next)
+            })
+            notificationObservers.append(NotificationCenter.default.addObserver(
+                forName: .readerPreviousPage,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                self?.turnPage(.previous)
+            })
+        }
+
+        fileprivate func turnPage(_ direction: PageTurnDirection) {
+            let multiplier = direction == .next ? 1 : -1
+            let script = """
+            (function() {
+              const reader = document.querySelector('.reader');
+              if (!reader) { return; }
+              const styles = window.getComputedStyle(reader);
+              const columnWidth = parseFloat(styles.columnWidth) || reader.clientWidth;
+              const columnGap = parseFloat(styles.columnGap) || 0;
+              const pageAdvance = columnWidth + columnGap;
+              reader.scrollBy({ left: pageAdvance * \(multiplier), top: 0, behavior: 'instant' });
+            })();
+            """
+            webView?.evaluateJavaScript(script)
+        }
+
+        deinit {
+            notificationObservers.forEach(NotificationCenter.default.removeObserver)
+        }
     }
+}
+
+private enum PageTurnDirection {
+    case previous
+    case next
+}
+
+private final class PagingWebView: WKWebView {
+    var onPageTurn: ((PageTurnDirection) -> Void)?
+
+    override var acceptsFirstResponder: Bool {
+        true
+    }
+
+    override func keyDown(with event: NSEvent) {
+        switch event.keyCode {
+        case KeyCode.leftArrow:
+            onPageTurn?(.previous)
+        case KeyCode.rightArrow, KeyCode.space:
+            onPageTurn?(.next)
+        default:
+            super.keyDown(with: event)
+        }
+    }
+}
+
+private enum KeyCode {
+    static let leftArrow: UInt16 = 123
+    static let rightArrow: UInt16 = 124
+    static let space: UInt16 = 49
+}
+
+extension Notification.Name {
+    static let readerNextPage = Notification.Name("readerNextPage")
+    static let readerPreviousPage = Notification.Name("readerPreviousPage")
 }

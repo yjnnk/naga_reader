@@ -171,8 +171,12 @@ struct ReaderDetailView: View {
 
     var body: some View {
         if let renderedChapter = viewModel.renderedChapter {
-            ReaderWebView(html: renderedChapter.html, baseURL: renderedChapter.baseURL)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            VStack(spacing: 0) {
+                ReaderWebView(html: renderedChapter.html, baseURL: renderedChapter.baseURL)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                PaginationControls()
+                    .padding(.vertical, 12)
+            }
         } else {
             VStack(spacing: 16) {
                 Text(viewModel.selectedChapter?.title ?? state.readerTitle)
@@ -195,6 +199,25 @@ struct ReaderDetailView: View {
         }
 
         return "Capítulo ativo: \(selected.href)."
+    }
+}
+
+struct PaginationControls: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            Button {
+                NotificationCenter.default.post(name: .readerPreviousPage, object: nil)
+            } label: {
+                Image(systemName: "chevron.left")
+            }
+            Button {
+                NotificationCenter.default.post(name: .readerNextPage, object: nil)
+            } label: {
+                Image(systemName: "chevron.right")
+            }
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.large)
     }
 }
 

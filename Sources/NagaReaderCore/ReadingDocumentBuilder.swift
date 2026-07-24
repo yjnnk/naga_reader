@@ -19,13 +19,22 @@ public struct ReadingDocumentBuilder {
               color: \(colors.text);
               font: \(settings.fontSize)px -apple-system, BlinkMacSystemFont, "New York", Georgia, serif;
               line-height: \(format(settings.lineHeight));
+              overflow: hidden;
             }
             .reader {
               box-sizing: border-box;
               max-width: \(settings.columnWidth)px;
               margin: 0 auto;
               padding: \(settings.pageMargin)px;
-              overflow-x: hidden;
+              overflow-x: auto;
+              overflow-y: hidden;
+              column-width: \(settings.columnWidth)px;
+              column-gap: \(settings.pageMargin * 2)px;
+              height: calc(100vh - \(settings.pageMargin * 2)px);
+              scrollbar-width: none;
+            }
+            .reader::-webkit-scrollbar {
+              display: none;
             }
             .reader * {
               box-sizing: border-box;

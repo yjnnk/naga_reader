@@ -31,4 +31,19 @@ final class ReadingDocumentBuilderTests: XCTestCase {
         XCTAssertFalse(html.contains("display: block;"))
         XCTAssertTrue(html.contains("<h1>Chapter One</h1><p style=\"width:100vw\">Hello</p><img src=\"image.png\">"))
     }
+
+    func testDefaultDocumentUsesSimplePagination() {
+        let html = ReadingDocumentBuilder().buildDocument(
+            chapterBody: "<p>Hello</p>",
+            settings: .default
+        )
+
+        XCTAssertTrue(html.contains("overflow: hidden;"))
+        XCTAssertTrue(html.contains("overflow-x: auto;"))
+        XCTAssertTrue(html.contains("overflow-y: hidden;"))
+        XCTAssertTrue(html.contains("column-width: 680px;"))
+        XCTAssertTrue(html.contains("column-gap: 144px;"))
+        XCTAssertTrue(html.contains("height: calc(100vh - 144px);"))
+        XCTAssertFalse(html.contains("scroll-behavior: smooth;"))
+    }
 }

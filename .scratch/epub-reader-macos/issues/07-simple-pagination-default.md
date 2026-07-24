@@ -4,10 +4,10 @@
 
 **Blocked by:** 05 — Renderizar capítulo em WKWebView com layout centralizado.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O modo de leitura padrão é paginação simples.
-- [ ] O usuário consegue avançar e voltar páginas dentro do capítulo atual.
-- [ ] A navegação por teclado funciona para página anterior e próxima.
-- [ ] A paginação não depende de animações sofisticadas.
-- [ ] A paginação mantém a coluna centralizada e as configurações de leitura aplicadas.
+- [x] O modo de leitura padrão é paginação simples.
+- [x] O usuário consegue avançar e voltar páginas dentro do capítulo atual.
+- [x] A navegação por teclado funciona para página anterior e próxima.
+- [x] A paginação não depende de animações sofisticadas.
+- [x] A paginação mantém a coluna centralizada e as configurações de leitura aplicadas.
