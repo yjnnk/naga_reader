@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" role="img" aria-labelledby="title desc">
+  <title id="title">NagaReader reading view</title>
+  <desc id="desc">A macOS reader window with sidebar, centered reading column, and pagination controls.</desc>
+  <rect width="1280" height="820" fill="#15161a"/>
+  <rect x="24" y="24" width="1232" height="772" rx="12" fill="#2d2d32" stroke="#47474d"/>
+  <circle cx="54" cy="54" r="10" fill="#ff5f57"/>
+  <circle cx="84" cy="54" r="10" fill="#ffbd2e"/>
+  <circle cx="114" cy="54" r="10" fill="#28c840"/>
+  <rect x="24" y="84" width="304" height="712" fill="#24252a"/>
+  <line x1="328" y1="84" x2="328" y2="796" stroke="#15161a" stroke-width="2"/>
+  <text x="48" y="140" fill="#8f9097" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="700">Livro atual</text>
+  <text x="48" y="180" fill="#f1f1f4" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="26" font-weight="700">Ultralearning</text>
+  <text x="48" y="214" fill="#aaaab1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="17">Master Hard Skills...</text>
+  <text x="48" y="280" fill="#8f9097" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="20" font-weight="700">Sumario</text>
+  <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="20" fill="#e7e7ec">
+    <text x="56" y="328">Title Page</text>
+    <text x="56" y="374">Foreword</text>
+    <rect x="44" y="398" width="260" height="54" rx="8" fill="#3b3c42"/>
+    <text x="56" y="432">Chapter I: Can You...</text>
+    <text x="56" y="486">Chapter II: Why...</text>
+    <text x="56" y="532">Chapter III: How...</text>
+    <text x="56" y="578">Chapter IV: Principle...</text>
+  </g>
+  <rect x="328" y="84" width="928" height="56" fill="#34343a"/>
+  <text x="356" y="121" fill="#f4f4f6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="24" font-weight="700">NagaReader</text>
+  <text x="1134" y="121" fill="#d4d4da" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="24" font-weight="700">AA</text>
+  <text x="1186" y="121" fill="#d4d4da" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="24">▾</text>
+  <rect x="328" y="140" width="928" height="586" fill="#f4ecd8"/>
+  <rect x="520" y="202" width="544" height="470" fill="#f4ecd8"/>
+  <text x="520" y="262" fill="#2c2418" font-family="Georgia, serif" font-size="34" font-weight="700">Chapter I</text>
+  <text x="520" y="314" fill="#2c2418" font-family="Georgia, serif" font-size="25">The text stays centered, with a readable</text>
+  <text x="520" y="354" fill="#2c2418" font-family="Georgia, serif" font-size="25">line length even on a widescreen monitor.</text>
+  <text x="520" y="416" fill="#2c2418" font-family="Georgia, serif" font-size="25">Margins, font size, line height, theme,</text>
+  <text x="520" y="456" fill="#2c2418" font-family="Georgia, serif" font-size="25">reading mode, and font family are</text>
+  <text x="520" y="496" fill="#2c2418" font-family="Georgia, serif" font-size="25">controlled by the app.</text>
+  <rect x="328" y="726" width="928" height="70" fill="#2d2d32"/>
+  <rect x="758" y="746" width="46" height="42" rx="9" fill="#686a72"/>
+  <text x="777" y="775" fill="#fff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="28">‹</text>
+  <rect x="822" y="746" width="46" height="42" rx="9" fill="#686a72"/>
+  <text x="841" y="775" fill="#fff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="28">›</text>
+</svg>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" role="img" aria-labelledby="title desc">
+  <title id="title">Appearance menu</title>
+  <desc id="desc">The appearance menu with theme, reading mode, font family, and typography controls.</desc>
+  <rect width="900" height="620" fill="#191a1f"/>
+  <rect x="44" y="42" width="812" height="532" rx="12" fill="#303137" stroke="#55565f"/>
+  <rect x="44" y="42" width="812" height="58" rx="12" fill="#373840"/>
+  <text x="74" y="79" fill="#f5f5f7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="22" font-weight="700">NagaReader</text>
+  <text x="760" y="80" fill="#d8d8de" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="24" font-weight="700">AA</text>
+  <text x="810" y="80" fill="#d8d8de" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="23">▾</text>
+  <rect x="558" y="104" width="258" height="394" rx="14" fill="#25262b" stroke="#55565f"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="17">
+    <text x="584" y="144" fill="#9fa0a8" font-weight="700">Tema</text>
+    <text x="584" y="178" fill="#f1f1f4">Claro</text>
+    <text x="584" y="210" fill="#f1f1f4">Escuro</text>
+    <text x="584" y="242" fill="#f1f1f4">Sepia ✓</text>
+    <line x1="584" y1="266" x2="790" y2="266" stroke="#43444b"/>
+    <text x="584" y="302" fill="#9fa0a8" font-weight="700">Modo</text>
+    <text x="584" y="336" fill="#f1f1f4">Paginacao ✓</text>
+    <text x="584" y="368" fill="#f1f1f4">Rolagem</text>
+    <line x1="584" y1="392" x2="790" y2="392" stroke="#43444b"/>
+    <text x="584" y="428" fill="#9fa0a8" font-weight="700">Fonte</text>
+    <text x="584" y="462" fill="#f1f1f4">Georgia ✓</text>
+  </g>
+  <rect x="110" y="150" width="382" height="300" fill="#f4ecd8"/>
+  <text x="154" y="214" fill="#2c2418" font-family="Georgia, serif" font-size="28" font-weight="700">Fonte de leitura</text>
+  <text x="154" y="266" fill="#2c2418" font-family="Georgia, serif" font-size="20">Escolha entre System, New York,</text>
+  <text x="154" y="300" fill="#2c2418" font-family="Georgia, serif" font-size="20">Georgia, Athelas, Palatino,</text>
+  <text x="154" y="334" fill="#2c2418" font-family="Georgia, serif" font-size="20">Charter, Iowan Old Style e Menlo.</text>
+</svg>
