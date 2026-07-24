@@ -15,12 +15,40 @@ final class ReadingSettingsStoreTests: XCTestCase {
             pageMargin: 88,
             fontSize: 21,
             lineHeight: 1.7,
-            theme: .dark
+            theme: .dark,
+            readingMode: .scroll
         )
 
         try store.save(settings)
 
         XCTAssertEqual(try store.load(), settings)
+    }
+
+    func testLoadsSettingsWrittenBeforeReadingModeExisted() throws {
+        let fileURL = temporaryJSONURL()
+        let legacyJSON = """
+        {
+          "columnWidth": 640,
+          "pageMargin": 80,
+          "fontSize": 20,
+          "lineHeight": 1.6,
+          "theme": "dark"
+        }
+        """
+        try legacyJSON.data(using: .utf8)?.write(to: fileURL)
+        let store = ReadingSettingsStore(fileURL: fileURL)
+
+        XCTAssertEqual(
+            try store.load(),
+            ReadingSettings(
+                columnWidth: 640,
+                pageMargin: 80,
+                fontSize: 20,
+                lineHeight: 1.6,
+                theme: .dark,
+                readingMode: .paged
+            )
+        )
     }
 
     private func temporaryJSONURL() -> URL {

@@ -97,6 +97,10 @@ struct ReadingSettingsMenu: View {
                 Text("Escuro").tag(ReadingTheme.dark)
                 Text("Sépia").tag(ReadingTheme.sepia)
             }
+            Picker("Modo", selection: modeBinding) {
+                Text("Paginação").tag(ReadingMode.paged)
+                Text("Rolagem").tag(ReadingMode.scroll)
+            }
 
             Divider()
 
@@ -115,6 +119,17 @@ struct ReadingSettingsMenu: View {
             set: { theme in
                 viewModel.updateReadingSettings { settings in
                     settings.with(theme: theme)
+                }
+            }
+        )
+    }
+
+    private var modeBinding: Binding<ReadingMode> {
+        Binding(
+            get: { viewModel.readingSettings.readingMode },
+            set: { mode in
+                viewModel.updateReadingSettings { settings in
+                    settings.with(readingMode: mode)
                 }
             }
         )
@@ -172,10 +187,16 @@ struct ReaderDetailView: View {
     var body: some View {
         if let renderedChapter = viewModel.renderedChapter {
             VStack(spacing: 0) {
-                ReaderWebView(html: renderedChapter.html, baseURL: renderedChapter.baseURL)
+                ReaderWebView(
+                    html: renderedChapter.html,
+                    baseURL: renderedChapter.baseURL,
+                    readingMode: viewModel.readingSettings.readingMode
+                )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                PaginationControls()
-                    .padding(.vertical, 12)
+                if viewModel.readingSettings.readingMode == .paged {
+                    PaginationControls()
+                        .padding(.vertical, 12)
+                }
             }
         } else {
             VStack(spacing: 16) {

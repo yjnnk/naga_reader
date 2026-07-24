@@ -5,6 +5,7 @@ public struct ReadingDocumentBuilder {
 
     public func buildDocument(chapterBody: String, settings: ReadingSettings = .default) -> String {
         let colors = ThemeColors(theme: settings.theme)
+        let layout = LayoutCSS(settings: settings)
 
         return """
         <!doctype html>
@@ -19,19 +20,14 @@ public struct ReadingDocumentBuilder {
               color: \(colors.text);
               font: \(settings.fontSize)px -apple-system, BlinkMacSystemFont, "New York", Georgia, serif;
               line-height: \(format(settings.lineHeight));
-              overflow: hidden;
+              \(layout.bodyOverflow)
             }
             .reader {
               box-sizing: border-box;
               max-width: \(settings.columnWidth)px;
               margin: 0 auto;
               padding: \(settings.pageMargin)px;
-              overflow-x: auto;
-              overflow-y: hidden;
-              column-width: \(settings.columnWidth)px;
-              column-gap: \(settings.pageMargin * 2)px;
-              height: calc(100vh - \(settings.pageMargin * 2)px);
-              scrollbar-width: none;
+              \(layout.readerLayout)
             }
             .reader::-webkit-scrollbar {
               display: none;
@@ -63,6 +59,33 @@ public struct ReadingDocumentBuilder {
 
     private func format(_ value: Double) -> String {
         String(format: "%.2g", value)
+    }
+}
+
+private struct LayoutCSS {
+    let bodyOverflow: String
+    let readerLayout: String
+
+    init(settings: ReadingSettings) {
+        switch settings.readingMode {
+        case .paged:
+            bodyOverflow = "overflow: hidden;"
+            readerLayout = """
+              overflow-x: auto;
+              overflow-y: hidden;
+              column-width: \(settings.columnWidth)px;
+              column-gap: \(settings.pageMargin * 2)px;
+              height: calc(100vh - \(settings.pageMargin * 2)px);
+              scrollbar-width: none;
+            """
+        case .scroll:
+            bodyOverflow = "overflow-y: auto;"
+            readerLayout = """
+              overflow-x: hidden;
+              overflow-y: visible;
+              min-height: calc(100vh - \(settings.pageMargin * 2)px);
+            """
+        }
     }
 }
 

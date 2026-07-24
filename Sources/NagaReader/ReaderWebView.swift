@@ -1,10 +1,12 @@
 import AppKit
+import NagaReaderCore
 import SwiftUI
 import WebKit
 
 struct ReaderWebView: NSViewRepresentable {
     let html: String
     let baseURL: URL?
+    let readingMode: ReadingMode
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -16,6 +18,8 @@ struct ReaderWebView: NSViewRepresentable {
         webView.onPageTurn = { [weak coordinator = context.coordinator] direction in
             coordinator?.turnPage(direction)
         }
+        webView.readingMode = readingMode
+        context.coordinator.readingMode = readingMode
         context.coordinator.loadedHTML = html
         context.coordinator.loadedBaseURL = baseURL
         context.coordinator.webView = webView
@@ -25,6 +29,11 @@ struct ReaderWebView: NSViewRepresentable {
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {
+        if let pagingWebView = webView as? PagingWebView {
+            pagingWebView.readingMode = readingMode
+        }
+        context.coordinator.readingMode = readingMode
+
         guard context.coordinator.loadedHTML != html || context.coordinator.loadedBaseURL != baseURL else {
             return
         }
@@ -38,6 +47,7 @@ struct ReaderWebView: NSViewRepresentable {
         weak var webView: WKWebView?
         var loadedHTML: String?
         var loadedBaseURL: URL?
+        var readingMode = ReadingMode.paged
         private var notificationObservers: [NSObjectProtocol] = []
 
         func installObservers() {
@@ -61,6 +71,9 @@ struct ReaderWebView: NSViewRepresentable {
         }
 
         fileprivate func turnPage(_ direction: PageTurnDirection) {
+            guard readingMode == .paged else {
+                return
+            }
             let multiplier = direction == .next ? 1 : -1
             let script = """
             (function() {
@@ -89,12 +102,18 @@ private enum PageTurnDirection {
 
 private final class PagingWebView: WKWebView {
     var onPageTurn: ((PageTurnDirection) -> Void)?
+    var readingMode = ReadingMode.paged
 
     override var acceptsFirstResponder: Bool {
         true
     }
 
     override func keyDown(with event: NSEvent) {
+        guard readingMode == .paged else {
+            super.keyDown(with: event)
+            return
+        }
+
         switch event.keyCode {
         case KeyCode.leftArrow:
             onPageTurn?(.previous)

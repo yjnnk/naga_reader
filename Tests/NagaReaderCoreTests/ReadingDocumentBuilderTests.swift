@@ -8,7 +8,8 @@ final class ReadingDocumentBuilderTests: XCTestCase {
             pageMargin: 88,
             fontSize: 21,
             lineHeight: 1.7,
-            theme: .dark
+            theme: .dark,
+            readingMode: .paged
         )
         let html = ReadingDocumentBuilder().buildDocument(
             chapterBody: "<h1>Chapter One</h1><p style=\"width:100vw\">Hello</p><img src=\"image.png\">",
@@ -45,5 +46,17 @@ final class ReadingDocumentBuilderTests: XCTestCase {
         XCTAssertTrue(html.contains("column-gap: 144px;"))
         XCTAssertTrue(html.contains("height: calc(100vh - 144px);"))
         XCTAssertFalse(html.contains("scroll-behavior: smooth;"))
+    }
+
+    func testScrollModeUsesContinuousVerticalReading() {
+        let html = ReadingDocumentBuilder().buildDocument(
+            chapterBody: "<p>Hello</p>",
+            settings: .default.with(readingMode: .scroll)
+        )
+
+        XCTAssertTrue(html.contains("overflow-y: auto;"))
+        XCTAssertTrue(html.contains("min-height: calc(100vh - 144px);"))
+        XCTAssertFalse(html.contains("column-width: 680px;"))
+        XCTAssertTrue(html.contains("max-width: 680px;"))
     }
 }
