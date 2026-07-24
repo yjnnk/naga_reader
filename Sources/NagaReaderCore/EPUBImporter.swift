@@ -19,9 +19,9 @@ public struct EPUBImporter {
         let title = sourceURL.deletingPathExtension().lastPathComponent
         let id = BookID("\(title.slugified())-\(UUID().uuidString.lowercased())")
         let bookDirectory = storageDirectory.appendingPathComponent(id.rawValue, isDirectory: true)
-        let storedURL = bookDirectory.appendingPathComponent(sourceURL.lastPathComponent)
+        let storedURL = bookDirectory.appendingPathComponent("book.epub")
         let temporaryURL = storageDirectory
-            .appendingPathComponent(".\(id.rawValue).tmp-\(sourceURL.lastPathComponent)")
+            .appendingPathComponent(".\(id.rawValue).tmp.epub")
 
         do {
             if FileManager.default.fileExists(atPath: temporaryURL.path) {

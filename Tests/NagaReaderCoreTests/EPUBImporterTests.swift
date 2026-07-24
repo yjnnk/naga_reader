@@ -69,6 +69,22 @@ final class EPUBImporterTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: secondRecord.storedURL.path))
     }
 
+    func testImportsEPUBWithVeryLongOriginalFileName() throws {
+        let source = try EPUBFixture.makeReflowableEPUB(title: "Long Name Book")
+        let longName = String(repeating: "long-", count: 48) + "archive.epub"
+        let longNamedSource = source.deletingLastPathComponent().appendingPathComponent(longName)
+        try FileManager.default.moveItem(at: source, to: longNamedSource)
+        let storageDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let importer = EPUBImporter(storageDirectory: storageDirectory)
+
+        let record = try importer.importBook(from: longNamedSource)
+
+        XCTAssertEqual(record.originalFileName, longName)
+        XCTAssertLessThanOrEqual(record.storedURL.lastPathComponent.count, 255)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: record.storedURL.path))
+    }
+
     func testRejectsFixedLayoutEPUBDuringImport() throws {
         let source = try EPUBFixture.makeFixedLayoutEPUB()
         let storageDirectory = FileManager.default.temporaryDirectory
