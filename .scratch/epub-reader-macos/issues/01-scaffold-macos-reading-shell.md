@@ -4,9 +4,9 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O projeto compila como app macOS nativo usando SwiftUI.
-- [ ] A janela principal tem uma sidebar reservada para sumário e uma área central de leitura.
-- [ ] O app abre sem exigir livro importado.
-- [ ] A estrutura inicial evita acoplar SwiftUI diretamente às futuras responsabilidades de parsing, storage e renderização.
+- [x] O projeto compila como app macOS nativo usando SwiftUI.
+- [x] A janela principal tem uma sidebar reservada para sumário e uma área central de leitura.
+- [x] O app abre sem exigir livro importado.
+- [x] A estrutura inicial evita acoplar SwiftUI diretamente às futuras responsabilidades de parsing, storage e renderização.
