@@ -2,9 +2,11 @@ import Foundation
 
 public struct EPUBImporter {
     private let storageDirectory: URL
+    private let parser: EPUBParser
 
-    public init(storageDirectory: URL) {
+    public init(storageDirectory: URL, parser: EPUBParser = EPUBParser()) {
         self.storageDirectory = storageDirectory
+        self.parser = parser
     }
 
     public func importBook(from sourceURL: URL) throws -> ImportedBookRecord {
@@ -35,11 +37,27 @@ public struct EPUBImporter {
             throw EPUBImportError.couldNotCopyBook
         }
 
+        let parsed: ParsedEPUB
+        do {
+            parsed = try parser.parse(
+                epubURL: storedURL,
+                extractingTo: bookDirectory.appendingPathComponent("extracted", isDirectory: true)
+            )
+        } catch let error as EPUBParseError {
+            throw error
+        } catch {
+            throw EPUBImportError.couldNotReadBook
+        }
+
         return ImportedBookRecord(
             id: id,
-            title: title,
+            title: parsed.title,
             originalFileName: sourceURL.lastPathComponent,
-            storedURL: storedURL
+            storedURL: storedURL,
+            packagePath: parsed.packagePath,
+            manifest: parsed.manifest,
+            spineHrefs: parsed.spineHrefs,
+            chapters: parsed.chapters
         )
     }
 }

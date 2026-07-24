@@ -3,7 +3,7 @@ import XCTest
 
 final class EPUBImporterTests: XCTestCase {
     func testImportsEPUBIntoAppStorageAndRecordsCurrentBook() throws {
-        let source = try makeTemporaryEPUB(named: "Fixture Book.epub")
+        let source = try EPUBFixture.makeReflowableEPUB()
         let storageDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let importer = EPUBImporter(storageDirectory: storageDirectory)
@@ -11,7 +11,12 @@ final class EPUBImporterTests: XCTestCase {
         let record = try importer.importBook(from: source)
 
         XCTAssertEqual(record.title, "Fixture Book")
-        XCTAssertEqual(record.originalFileName, "Fixture Book.epub")
+        XCTAssertEqual(record.originalFileName, source.lastPathComponent)
+        XCTAssertEqual(record.packagePath, "OEBPS/content.opf")
+        XCTAssertEqual(record.manifest["chapter1"]?.href, "chapters/chapter1.xhtml")
+        XCTAssertEqual(record.manifest["cover"]?.mediaType, "image/jpeg")
+        XCTAssertEqual(record.spineHrefs, ["chapters/chapter1.xhtml"])
+        XCTAssertEqual(record.chapters, [EPUBChapter(title: "Chapter One", href: "chapters/chapter1.xhtml")])
         XCTAssertTrue(FileManager.default.fileExists(atPath: record.storedURL.path))
         XCTAssertTrue(record.storedURL.path.hasPrefix(storageDirectory.path))
     }
@@ -32,8 +37,8 @@ final class EPUBImporterTests: XCTestCase {
     }
 
     func testImportsSameFileNameAsDistinctStoredBooks() throws {
-        let first = try makeTemporaryEPUB(named: "Book.epub")
-        let second = try makeTemporaryEPUB(named: "Book.epub")
+        let first = try EPUBFixture.makeReflowableEPUB(title: "Book")
+        let second = try EPUBFixture.makeReflowableEPUB(title: "Book")
         let storageDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let importer = EPUBImporter(storageDirectory: storageDirectory)
@@ -47,15 +52,14 @@ final class EPUBImporterTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: secondRecord.storedURL.path))
     }
 
-    private func makeTemporaryEPUB(named fileName: String) throws -> URL {
-        let url = FileManager.default.temporaryDirectory
+    func testRejectsFixedLayoutEPUBDuringImport() throws {
+        let source = try EPUBFixture.makeFixedLayoutEPUB()
+        let storageDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
-            .appendingPathComponent(fileName)
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
-        try Data("fixture".utf8).write(to: url)
-        return url
+        let importer = EPUBImporter(storageDirectory: storageDirectory)
+
+        XCTAssertThrowsError(try importer.importBook(from: source)) { error in
+            XCTAssertEqual(error as? EPUBParseError, .unsupportedFixedLayout)
+        }
     }
 }
