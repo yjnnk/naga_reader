@@ -40,7 +40,7 @@ public struct ReadingDocumentBuilder {
             .reader table,
             .reader pre {
               display: block;
-              overflow-x: auto;
+              overflow-x: hidden;
             }
             img {
               max-width: 100% !important;
@@ -72,11 +72,11 @@ private struct LayoutCSS {
         case .paged:
             bodyOverflow = "overflow: hidden;"
             readerLayout = """
-              width: min(100vw, \(pagedReaderWidth)px);
-              max-width: none;
+              width: 100%;
+              max-width: \(pagedReaderWidth)px;
               overflow-x: auto;
               overflow-y: hidden;
-              column-count: 1;
+              column-width: \(settings.columnWidth)px;
               column-gap: \(settings.pageMargin * 2)px;
               column-fill: auto;
               height: calc(100vh - \(settings.pageMargin * 2)px);

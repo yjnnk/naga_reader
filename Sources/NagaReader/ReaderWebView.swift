@@ -120,7 +120,9 @@ struct ReaderWebView: NSViewRepresentable {
               const maxLeft = Math.max(0, reader.scrollWidth - reader.clientWidth);
               const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
               if (isPaged) {
-                reader.scrollLeft = maxLeft * progress;
+                const pageAdvance = Math.max(1, reader.clientWidth);
+                const targetLeft = Math.round((maxLeft * progress) / pageAdvance) * pageAdvance;
+                reader.scrollLeft = Math.max(0, Math.min(maxLeft, targetLeft));
               } else {
                 window.scrollTo(0, maxTop * progress);
               }

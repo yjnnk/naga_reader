@@ -107,14 +107,15 @@ public struct EPUBParser {
         let navHref = package.manifest.values.first { item in
             item.properties.split(separator: " ").contains("nav")
         }?.href
-        let navChapters = try navHref.map { href in
-            try NavigationParser.parse(packageBaseURL.appendingPathComponent(href))
-        } ?? []
-        let chapters = spineHrefs.map { href in
-            navChapters.first { normalizedChapterHref($0.href) == normalizedChapterHref(href) }
-                .map { EPUBChapter(title: $0.title, href: href) }
-                ?? EPUBChapter(title: fallbackTitle(for: href), href: href)
+        let navChapters: [EPUBChapter]
+        if let navHref {
+            navChapters = try NavigationParser.parse(packageBaseURL.appendingPathComponent(navHref))
+        } else if let tocID = package.tocID, let tocHref = package.manifest[tocID]?.href {
+            navChapters = try NCXNavigationParser.parse(packageBaseURL.appendingPathComponent(tocHref))
+        } else {
+            navChapters = []
         }
+        let chapters = chaptersForTableOfContents(spineHrefs: spineHrefs, navigationChapters: navChapters)
 
         return ParsedEPUB(
             title: package.title.isEmpty ? epubURL.deletingPathExtension().lastPathComponent : package.title,
@@ -151,6 +152,29 @@ public struct EPUBParser {
             .replacingOccurrences(of: "_", with: " ")
             .capitalized ?? href
     }
+
+    private func chaptersForTableOfContents(
+        spineHrefs: [String],
+        navigationChapters: [EPUBChapter]
+    ) -> [EPUBChapter] {
+        guard !navigationChapters.isEmpty else {
+            return spineHrefs.map { EPUBChapter(title: fallbackTitle(for: $0), href: $0) }
+        }
+
+        let spineByNormalizedHref = Dictionary(
+            uniqueKeysWithValues: spineHrefs.map { (normalizedChapterHref($0), $0) }
+        )
+        let chapters = navigationChapters.compactMap { chapter -> EPUBChapter? in
+            guard let spineHref = spineByNormalizedHref[normalizedChapterHref(chapter.href)] else {
+                return nil
+            }
+            return EPUBChapter(title: chapter.title, href: spineHref)
+        }
+
+        return chapters.isEmpty
+            ? spineHrefs.map { EPUBChapter(title: fallbackTitle(for: $0), href: $0) }
+            : chapters
+    }
 }
 
 private func normalizedChapterHref(_ href: String) -> String {
@@ -162,6 +186,7 @@ private struct PackageData {
     let title: String
     let manifest: [String: EPUBManifestItem]
     let spineIDs: [String]
+    let tocID: String?
     let isFixedLayout: Bool
 }
 
@@ -200,6 +225,7 @@ private final class PackageParser: NSObject, XMLParserDelegate {
     private var isReadingTitle = false
     private var manifest: [String: EPUBManifestItem] = [:]
     private var spineIDs: [String] = []
+    private var tocID: String?
     private var isFixedLayout = false
 
     static func parse(_ url: URL) throws -> PackageData {
@@ -215,6 +241,7 @@ private final class PackageParser: NSObject, XMLParserDelegate {
             title: delegate.title.trimmingCharacters(in: .whitespacesAndNewlines),
             manifest: delegate.manifest,
             spineIDs: delegate.spineIDs,
+            tocID: delegate.tocID,
             isFixedLayout: delegate.isFixedLayout
         )
     }
@@ -246,8 +273,10 @@ private final class PackageParser: NSObject, XMLParserDelegate {
                 mediaType: attributeDict["media-type"] ?? "",
                 properties: attributeDict["properties"] ?? ""
             )
+        case "spine":
+            tocID = attributeDict["toc"]
         case "itemref":
-            if let idref = attributeDict["idref"] {
+            if let idref = attributeDict["idref"], attributeDict["linear"] != "no" {
                 spineIDs.append(idref)
             }
         default:
@@ -345,5 +374,92 @@ private final class NavigationParser: NSObject, XMLParserDelegate {
         chapters.append(EPUBChapter(title: title.isEmpty ? href : title, href: href))
         currentHref = nil
         currentTitle = ""
+    }
+}
+
+private final class NCXNavigationParser: NSObject, XMLParserDelegate {
+    private struct PendingChapter {
+        var title = ""
+        var href: String?
+        var isReadingLabelText = false
+    }
+
+    private var chapters: [EPUBChapter] = []
+    private var stack: [PendingChapter] = []
+
+    static func parse(_ url: URL) throws -> [EPUBChapter] {
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            return []
+        }
+
+        let delegate = NCXNavigationParser()
+        let parser = XMLParser(data: try Data(contentsOf: url))
+        parser.delegate = delegate
+
+        guard parser.parse() else {
+            return []
+        }
+
+        return delegate.chapters
+    }
+
+    func parser(
+        _ parser: XMLParser,
+        didStartElement elementName: String,
+        namespaceURI: String?,
+        qualifiedName qName: String?,
+        attributes attributeDict: [String: String] = [:]
+    ) {
+        switch localName(elementName) {
+        case "navPoint":
+            stack.append(PendingChapter())
+        case "text":
+            guard !stack.isEmpty else {
+                return
+            }
+            stack[stack.count - 1].isReadingLabelText = true
+        case "content":
+            guard !stack.isEmpty else {
+                return
+            }
+            stack[stack.count - 1].href = attributeDict["src"]
+        default:
+            break
+        }
+    }
+
+    func parser(_ parser: XMLParser, foundCharacters string: String) {
+        guard !stack.isEmpty, stack[stack.count - 1].isReadingLabelText else {
+            return
+        }
+
+        stack[stack.count - 1].title += string
+    }
+
+    func parser(
+        _ parser: XMLParser,
+        didEndElement elementName: String,
+        namespaceURI: String?,
+        qualifiedName qName: String?
+    ) {
+        switch localName(elementName) {
+        case "text":
+            guard !stack.isEmpty else {
+                return
+            }
+            stack[stack.count - 1].isReadingLabelText = false
+        case "navPoint":
+            guard let chapter = stack.popLast(), let href = chapter.href else {
+                return
+            }
+            let title = chapter.title.trimmingCharacters(in: .whitespacesAndNewlines)
+            chapters.append(EPUBChapter(title: title.isEmpty ? href : title, href: href))
+        default:
+            break
+        }
+    }
+
+    private func localName(_ elementName: String) -> String {
+        elementName.split(separator: ":").last.map(String.init) ?? elementName
     }
 }

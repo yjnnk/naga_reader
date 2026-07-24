@@ -28,6 +28,16 @@ final class EPUBParserTests: XCTestCase {
         XCTAssertEqual(parsed.chapters, [EPUBChapter(title: "Chapter One", href: "chapters/chapter1.xhtml")])
     }
 
+    func testParsesEPUB2NCXTableOfContents() throws {
+        let epubURL = try EPUBFixture.makeEPUB2WithNCX()
+        let extractionURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+
+        let parsed = try EPUBParser().parse(epubURL: epubURL, extractingTo: extractionURL)
+
+        XCTAssertEqual(parsed.chapters, [EPUBChapter(title: "NCX Chapter One", href: "chapters/chapter1.xhtml")])
+    }
+
     func testRejectsFixedLayoutEPUB() throws {
         let epubURL = try EPUBFixture.makeFixedLayoutEPUB()
         let extractionURL = FileManager.default.temporaryDirectory
