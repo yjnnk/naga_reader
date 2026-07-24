@@ -4,10 +4,10 @@
 
 **Blocked by:** 02 — Importar um EPUB local para armazenamento do app; 09 — Persistir posição de leitura por livro.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O app mantém uma lista simples de livros recentes.
-- [ ] O app consegue reabrir o último livro usado.
-- [ ] Reabrir o último livro também restaura a posição de leitura.
-- [ ] O fluxo não exige biblioteca completa ou gerenciamento avançado de coleção.
-- [ ] Livros ausentes ou inválidos em recentes são tratados com mensagem clara.
+- [x] O app mantém uma lista simples de livros recentes.
+- [x] O app consegue reabrir o último livro usado.
+- [x] Reabrir o último livro também restaura a posição de leitura.
+- [x] O fluxo não exige biblioteca completa ou gerenciamento avançado de coleção.
+- [x] Livros ausentes ou inválidos em recentes são tratados com mensagem clara.

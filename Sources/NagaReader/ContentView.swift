@@ -41,7 +41,19 @@ struct ContentView: View {
                 if !viewModel.library.recentBooks.isEmpty {
                     Section("Recentes") {
                         ForEach(viewModel.library.recentBooks) { book in
-                            Text(book.title)
+                            Button {
+                                viewModel.openRecentBook(id: book.id)
+                            } label: {
+                                HStack {
+                                    Text(book.title)
+                                    Spacer()
+                                    if viewModel.currentBook?.id == book.id {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }

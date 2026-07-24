@@ -34,4 +34,26 @@ public struct LibraryStore {
         state.currentBookID = book.id
         try save(state)
     }
+
+    public func selectRecentBook(id: BookID) throws -> ImportedBookRecord? {
+        var state = try load()
+        guard let index = state.recentBooks.firstIndex(where: { $0.id == id }) else {
+            return nil
+        }
+
+        let book = state.recentBooks.remove(at: index)
+        state.recentBooks.insert(book, at: 0)
+        state.currentBookID = book.id
+        try save(state)
+        return book
+    }
+
+    public func removeRecentBook(id: BookID) throws {
+        var state = try load()
+        state.recentBooks.removeAll { $0.id == id }
+        if state.currentBookID == id {
+            state.currentBookID = state.recentBooks.first?.id
+        }
+        try save(state)
+    }
 }

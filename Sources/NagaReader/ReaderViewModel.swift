@@ -44,9 +44,8 @@ final class ReaderViewModel: ObservableObject {
                 library.recentBooks.first { $0.id == currentID }
             }
             if let currentBook {
-                readerSession = try openSession(for: currentBook)
+                try openStoredBook(currentBook, missingMessage: "O último EPUB aberto não foi encontrado e foi removido dos recentes.")
             }
-            try rebuildReaderDocument()
         } catch {
             errorMessage = "Não foi possível carregar a biblioteca local. \(error.localizedDescription)"
         }
@@ -61,6 +60,20 @@ final class ReaderViewModel: ObservableObject {
             try rebuildReaderDocument()
         } catch {
             errorMessage = "Não foi possível importar este EPUB. \(error.localizedDescription)"
+        }
+    }
+
+    func openRecentBook(id: BookID) {
+        do {
+            guard let book = try libraryStore.selectRecentBook(id: id) else {
+                library = try libraryStore.load()
+                errorMessage = "Este livro não está mais na lista de recentes."
+                return
+            }
+            library = try libraryStore.load()
+            try openStoredBook(book, missingMessage: "O arquivo deste EPUB não foi encontrado e foi removido dos recentes.")
+        } catch {
+            errorMessage = "Não foi possível reabrir este EPUB. \(error.localizedDescription)"
         }
     }
 
@@ -119,6 +132,33 @@ final class ReaderViewModel: ObservableObject {
 
     private func openSession(for book: ImportedBookRecord) throws -> ReaderSession {
         try ReaderSession.open(book, position: readingPositionStore.position(for: book.id))
+    }
+
+    private func openStoredBook(_ book: ImportedBookRecord, missingMessage: String) throws {
+        guard FileManager.default.fileExists(atPath: book.storedURL.path) else {
+            try removeUnavailableRecentBook(book, message: missingMessage)
+            return
+        }
+
+        readerSession = try openSession(for: book)
+        do {
+            try rebuildReaderDocument()
+        } catch {
+            try removeUnavailableRecentBook(
+                book,
+                message: "Este EPUB não pôde ser lido e foi removido dos recentes. \(error.localizedDescription)"
+            )
+        }
+    }
+
+    private func removeUnavailableRecentBook(_ book: ImportedBookRecord, message: String) throws {
+        try libraryStore.removeRecentBook(id: book.id)
+        library = try libraryStore.load()
+        if currentBook?.id == book.id {
+            readerSession = nil
+            renderedChapter = nil
+        }
+        errorMessage = message
     }
 
     private func saveCurrentPosition(progress: Double) throws {

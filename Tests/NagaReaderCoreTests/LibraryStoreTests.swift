@@ -58,6 +58,41 @@ final class LibraryStoreTests: XCTestCase {
         XCTAssertEqual(library.recentBooks.map(\.id), [first.id, second.id])
     }
 
+    func testSelectingRecentBookMakesItCurrentAndMovesItToFront() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("json")
+        let store = LibraryStore(fileURL: storeURL)
+        let first = makeBook(id: "first", title: "First")
+        let second = makeBook(id: "second", title: "Second")
+
+        try store.recordImportedBook(first)
+        try store.recordImportedBook(second)
+        let selected = try store.selectRecentBook(id: first.id)
+
+        let library = try store.load()
+        XCTAssertEqual(selected, first)
+        XCTAssertEqual(library.currentBookID, first.id)
+        XCTAssertEqual(library.recentBooks.map(\.id), [first.id, second.id])
+    }
+
+    func testRemovingCurrentRecentBookFallsBackToNextRecent() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("json")
+        let store = LibraryStore(fileURL: storeURL)
+        let first = makeBook(id: "first", title: "First")
+        let second = makeBook(id: "second", title: "Second")
+
+        try store.recordImportedBook(first)
+        try store.recordImportedBook(second)
+        try store.removeRecentBook(id: second.id)
+
+        let library = try store.load()
+        XCTAssertEqual(library.currentBookID, first.id)
+        XCTAssertEqual(library.recentBooks.map(\.id), [first.id])
+    }
+
     func testLoadsBookRecordsWrittenBeforePackageMetadataExisted() throws {
         let storeURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
@@ -82,5 +117,16 @@ final class LibraryStoreTests: XCTestCase {
         XCTAssertEqual(library.recentBooks.first?.manifest, [:])
         XCTAssertEqual(library.recentBooks.first?.spineHrefs, [])
         XCTAssertEqual(library.recentBooks.first?.chapters, [])
+    }
+
+    private func makeBook(id: BookID, title: String) -> ImportedBookRecord {
+        ImportedBookRecord(
+            id: id,
+            title: title,
+            originalFileName: "\(title).epub",
+            storedURL: URL(fileURLWithPath: "/tmp/\(title).epub"),
+            packagePath: "OEBPS/content.opf",
+            spineHrefs: ["chapters/\(id.rawValue).xhtml"]
+        )
     }
 }
