@@ -6,6 +6,7 @@ final class ReaderViewModel: ObservableObject {
     @Published private(set) var shellState = AppShellState.empty
     @Published private(set) var library = LibraryState.empty
     @Published private(set) var readerSession: ReaderSession?
+    @Published private(set) var renderedChapter: RenderedChapter?
     @Published var errorMessage: String?
 
     var currentBook: ImportedBookRecord? {
@@ -22,6 +23,8 @@ final class ReaderViewModel: ObservableObject {
 
     private let importer: EPUBImporter
     private let libraryStore: LibraryStore
+    private let parser = EPUBParser()
+    private let documentBuilder = ReadingDocumentBuilder()
 
     init(directories: AppDirectories = .live) {
         self.importer = EPUBImporter(storageDirectory: directories.books)
@@ -35,6 +38,7 @@ final class ReaderViewModel: ObservableObject {
                 library.recentBooks.first { $0.id == currentID }
             }
             readerSession = currentBook.map(ReaderSession.open)
+            try rebuildReaderDocument()
         } catch {
             errorMessage = "Não foi possível carregar a biblioteca local. \(error.localizedDescription)"
         }
@@ -46,6 +50,7 @@ final class ReaderViewModel: ObservableObject {
             try libraryStore.recordImportedBook(book)
             library = try libraryStore.load()
             readerSession = ReaderSession.open(book)
+            try rebuildReaderDocument()
         } catch {
             errorMessage = "Não foi possível importar este EPUB. \(error.localizedDescription)"
         }
@@ -53,9 +58,31 @@ final class ReaderViewModel: ObservableObject {
 
     func selectTableOfContentsEntry(id: Int) {
         readerSession?.selectEntry(id: id)
+        do {
+            try rebuildReaderDocument()
+        } catch {
+            errorMessage = "Não foi possível carregar este capítulo. \(error.localizedDescription)"
+        }
     }
 
     func isSelectedTableOfContentsEntry(_ entry: ReaderSession.TableOfContentsEntry) -> Bool {
         readerSession?.selectedEntryID == entry.id
+    }
+
+    private func rebuildReaderDocument() throws {
+        guard let book = currentBook, let chapter = selectedChapter else {
+            renderedChapter = nil
+            return
+        }
+
+        let extractionURL = book.storedURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("extracted", isDirectory: true)
+        let parsed = try parser.parse(epubURL: book.storedURL, extractingTo: extractionURL)
+        let content = try ChapterContentLoader(parsedEPUB: parsed).loadChapterBody(href: chapter.href)
+        renderedChapter = RenderedChapter(
+            html: documentBuilder.buildDocument(chapterBody: content.body),
+            baseURL: content.baseURL
+        )
     }
 }

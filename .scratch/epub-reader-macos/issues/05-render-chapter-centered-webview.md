@@ -4,10 +4,10 @@
 
 **Blocked by:** 04 — Mostrar sumário e trocar capítulos.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O capítulo ativo é renderizado em WKWebView.
-- [ ] O conteúdo é carregado por um wrapper HTML/CSS controlado pelo app.
-- [ ] O texto aparece em coluna centralizada com largura máxima legível.
-- [ ] Imagens simples aparecem inline e respeitam a largura da coluna.
-- [ ] O EPUB não consegue expandir o texto para ocupar todo o monitor widescreen.
+- [x] O capítulo ativo é renderizado em WKWebView.
+- [x] O conteúdo é carregado por um wrapper HTML/CSS controlado pelo app.
+- [x] O texto aparece em coluna centralizada com largura máxima legível.
+- [x] Imagens simples aparecem inline e respeitam a largura da coluna.
+- [x] O EPUB não consegue expandir o texto para ocupar todo o monitor widescreen.

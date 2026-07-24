@@ -31,6 +31,7 @@ public struct ParsedEPUB: Equatable {
     public let spineHrefs: [String]
     public let chapters: [EPUBChapter]
     public let extractedDirectory: URL
+    public let packageBaseDirectory: URL
 
     public init(
         title: String,
@@ -38,7 +39,8 @@ public struct ParsedEPUB: Equatable {
         manifest: [String: EPUBManifestItem],
         spineHrefs: [String],
         chapters: [EPUBChapter],
-        extractedDirectory: URL
+        extractedDirectory: URL,
+        packageBaseDirectory: URL
     ) {
         self.title = title
         self.packagePath = packagePath
@@ -46,6 +48,7 @@ public struct ParsedEPUB: Equatable {
         self.spineHrefs = spineHrefs
         self.chapters = chapters
         self.extractedDirectory = extractedDirectory
+        self.packageBaseDirectory = packageBaseDirectory
     }
 }
 
@@ -117,7 +120,8 @@ public struct EPUBParser {
             manifest: package.manifest,
             spineHrefs: spineHrefs,
             chapters: chapters,
-            extractedDirectory: extractionURL
+            extractedDirectory: extractionURL,
+            packageBaseDirectory: packageBaseURL
         )
     }
 

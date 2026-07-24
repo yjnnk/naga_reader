@@ -49,14 +49,7 @@ struct ContentView: View {
             .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 320)
         } detail: {
-            VStack(spacing: 16) {
-                Text(viewModel.selectedChapter?.title ?? state.readerTitle)
-                    .font(.title)
-                Text(detailMessage)
-                    .foregroundStyle(.secondary)
-                OpenEPUBButton()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ReaderDetailView()
         }
         .frame(minWidth: 900, minHeight: 640)
         .toolbar {
@@ -90,6 +83,39 @@ struct ContentView: View {
         }
 
         return "Capítulo ativo: \(selected.href). A renderização do conteúdo entra no próximo ticket."
+    }
+}
+
+struct ReaderDetailView: View {
+    @EnvironmentObject private var viewModel: ReaderViewModel
+    private let state = AppShellState.empty
+
+    var body: some View {
+        if let renderedChapter = viewModel.renderedChapter {
+            ReaderWebView(html: renderedChapter.html, baseURL: renderedChapter.baseURL)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            VStack(spacing: 16) {
+                Text(viewModel.selectedChapter?.title ?? state.readerTitle)
+                    .font(.title)
+                Text(detailMessage)
+                    .foregroundStyle(.secondary)
+                OpenEPUBButton()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private var detailMessage: String {
+        guard viewModel.readerSession != nil else {
+            return state.readerMessage
+        }
+
+        guard let selected = viewModel.selectedChapter else {
+            return "Este EPUB não tem capítulos navegáveis."
+        }
+
+        return "Capítulo ativo: \(selected.href)."
     }
 }
 
