@@ -280,6 +280,12 @@ struct OpenEPUBButton: View {
             panel.canChooseDirectories = false
 
             if panel.runModal() == .OK, let url = panel.url {
+                let hasScopedAccess = url.startAccessingSecurityScopedResource()
+                defer {
+                    if hasScopedAccess {
+                        url.stopAccessingSecurityScopedResource()
+                    }
+                }
                 viewModel.importBook(from: url)
             }
         } label: {

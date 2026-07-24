@@ -68,15 +68,15 @@ public struct ImportedBookRecord: Equatable, Codable, Identifiable {
 
 public enum EPUBImportError: Error, Equatable, LocalizedError {
     case unsupportedFileType
-    case couldNotCopyBook
+    case couldNotCopyBook(String)
     case couldNotReadBook
 
     public var errorDescription: String? {
         switch self {
         case .unsupportedFileType:
             return "Apenas arquivos EPUB são suportados."
-        case .couldNotCopyBook:
-            return "Não foi possível copiar o EPUB para o armazenamento local do app."
+        case .couldNotCopyBook(let reason):
+            return "Não foi possível copiar o EPUB para o armazenamento local do app. \(reason)"
         case .couldNotReadBook:
             return "Não foi possível ler este EPUB."
         }

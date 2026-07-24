@@ -34,7 +34,7 @@ public struct EPUBImporter {
             if FileManager.default.fileExists(atPath: temporaryURL.path) {
                 try? FileManager.default.removeItem(at: temporaryURL)
             }
-            throw EPUBImportError.couldNotCopyBook
+            throw EPUBImportError.couldNotCopyBook(error.localizedDescription)
         }
 
         let parsed: ParsedEPUB

@@ -36,6 +36,23 @@ final class EPUBImporterTests: XCTestCase {
         }
     }
 
+    func testCopyFailureReportsUnderlyingReason() throws {
+        let missingSource = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("epub")
+        let importer = EPUBImporter(
+            storageDirectory: FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        )
+
+        XCTAssertThrowsError(try importer.importBook(from: missingSource)) { error in
+            guard case let EPUBImportError.couldNotCopyBook(reason) = error else {
+                return XCTFail("Expected copy failure, got \(error)")
+            }
+            XCTAssertFalse(reason.isEmpty)
+        }
+    }
+
     func testImportsSameFileNameAsDistinctStoredBooks() throws {
         let first = try EPUBFixture.makeReflowableEPUB(title: "Book")
         let second = try EPUBFixture.makeReflowableEPUB(title: "Book")
