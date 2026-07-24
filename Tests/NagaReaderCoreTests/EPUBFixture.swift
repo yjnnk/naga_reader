@@ -1,8 +1,8 @@
 import Foundation
 
 enum EPUBFixture {
-    static func makeReflowableEPUB(title: String = "Fixture Book") throws -> URL {
-        try makeEPUB(title: title, fixedLayout: false)
+    static func makeReflowableEPUB(title: String = "Fixture Book", navHref: String = "chapters/chapter1.xhtml") throws -> URL {
+        try makeEPUB(title: title, fixedLayout: false, navHref: navHref)
     }
 
     static func makeFixedLayoutEPUB(title: String = "Fixed Book") throws -> URL {
@@ -13,7 +13,12 @@ enum EPUBFixture {
         try makeEPUB(title: title, fixedLayout: false, brokenSpine: true)
     }
 
-    private static func makeEPUB(title: String, fixedLayout: Bool, brokenSpine: Bool = false) throws -> URL {
+    private static func makeEPUB(
+        title: String,
+        fixedLayout: Bool,
+        brokenSpine: Bool = false,
+        navHref: String = "chapters/chapter1.xhtml"
+    ) throws -> URL {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let metaINF = root.appendingPathComponent("META-INF", isDirectory: true)
@@ -62,7 +67,7 @@ enum EPUBFixture {
           <body>
             <nav epub:type="toc">
               <ol>
-                <li><a href="chapters/chapter1.xhtml">Chapter One</a></li>
+                <li><a href="\(navHref)">Chapter One</a></li>
               </ol>
             </nav>
           </body>

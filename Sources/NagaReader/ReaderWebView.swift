@@ -99,11 +99,11 @@ struct ReaderWebView: NSViewRepresentable {
             (function() {
               const reader = document.querySelector('.reader');
               if (!reader) { return; }
-              const styles = window.getComputedStyle(reader);
-              const columnWidth = parseFloat(styles.columnWidth) || reader.clientWidth;
-              const columnGap = parseFloat(styles.columnGap) || 0;
-              const pageAdvance = columnWidth + columnGap;
-              reader.scrollBy({ left: pageAdvance * \(multiplier), top: 0, behavior: 'instant' });
+              const pageAdvance = Math.max(1, reader.clientWidth);
+              const maxLeft = Math.max(0, reader.scrollWidth - reader.clientWidth);
+              const currentPage = Math.round(reader.scrollLeft / pageAdvance);
+              const targetLeft = Math.max(0, Math.min(maxLeft, (currentPage + \(multiplier)) * pageAdvance));
+              reader.scrollTo({ left: targetLeft, top: 0, behavior: 'auto' });
             })();
             """
             webView?.evaluateJavaScript(script)

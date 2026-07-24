@@ -140,8 +140,9 @@ final class ReaderViewModel: ObservableObject {
             return
         }
 
-        readerSession = try openSession(for: book)
         do {
+            let parsedBook = try refreshParsedMetadata(for: book)
+            readerSession = try openSession(for: parsedBook)
             try rebuildReaderDocument()
         } catch {
             try removeUnavailableRecentBook(
@@ -159,6 +160,17 @@ final class ReaderViewModel: ObservableObject {
             renderedChapter = nil
         }
         errorMessage = message
+    }
+
+    private func refreshParsedMetadata(for book: ImportedBookRecord) throws -> ImportedBookRecord {
+        let extractionURL = book.storedURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("extracted", isDirectory: true)
+        let parsed = try parser.parse(epubURL: book.storedURL, extractingTo: extractionURL)
+        let refreshedBook = book.withParsedMetadata(parsed)
+        try libraryStore.recordImportedBook(refreshedBook)
+        library = try libraryStore.load()
+        return refreshedBook
     }
 
     private func readableImportMessage(for error: Error) -> String {

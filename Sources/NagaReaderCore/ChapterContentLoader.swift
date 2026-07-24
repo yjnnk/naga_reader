@@ -19,7 +19,8 @@ public struct ChapterContentLoader {
 
     public func loadChapterBody(href: String) throws -> ChapterContent {
         let packageBase = parsedEPUB.packageBaseDirectory
-        let chapterURL = packageBase.appendingPathComponent(href)
+        let chapterPath = href.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false).first.map(String.init) ?? href
+        let chapterURL = packageBase.appendingPathComponent(chapterPath)
         let text = try String(contentsOf: chapterURL, encoding: .utf8)
         return ChapterContent(
             body: XHTMLBodyExtractor.extractBody(from: text),

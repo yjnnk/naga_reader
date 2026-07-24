@@ -111,7 +111,9 @@ public struct EPUBParser {
             try NavigationParser.parse(packageBaseURL.appendingPathComponent(href))
         } ?? []
         let chapters = spineHrefs.map { href in
-            navChapters.first { $0.href == href } ?? EPUBChapter(title: fallbackTitle(for: href), href: href)
+            navChapters.first { normalizedChapterHref($0.href) == normalizedChapterHref(href) }
+                .map { EPUBChapter(title: $0.title, href: href) }
+                ?? EPUBChapter(title: fallbackTitle(for: href), href: href)
         }
 
         return ParsedEPUB(
@@ -143,12 +145,17 @@ public struct EPUBParser {
     }
 
     private func fallbackTitle(for href: String) -> String {
-        href.split(separator: "/").last?
+        normalizedChapterHref(href).split(separator: "/").last?
             .split(separator: ".").first?
             .replacingOccurrences(of: "-", with: " ")
             .replacingOccurrences(of: "_", with: " ")
             .capitalized ?? href
     }
+}
+
+private func normalizedChapterHref(_ href: String) -> String {
+    let withoutFragment = href.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false).first.map(String.init) ?? href
+    return withoutFragment.removingPercentEncoding ?? withoutFragment
 }
 
 private struct PackageData {

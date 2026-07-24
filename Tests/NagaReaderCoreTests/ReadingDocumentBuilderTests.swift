@@ -42,9 +42,13 @@ final class ReadingDocumentBuilderTests: XCTestCase {
         XCTAssertTrue(html.contains("overflow: hidden;"))
         XCTAssertTrue(html.contains("overflow-x: auto;"))
         XCTAssertTrue(html.contains("overflow-y: hidden;"))
-        XCTAssertTrue(html.contains("column-width: 680px;"))
+        XCTAssertTrue(html.contains("width: min(100vw, 824px);"))
+        XCTAssertTrue(html.contains("max-width: none;"))
+        XCTAssertTrue(html.contains("column-count: 1;"))
         XCTAssertTrue(html.contains("column-gap: 144px;"))
+        XCTAssertTrue(html.contains("column-fill: auto;"))
         XCTAssertTrue(html.contains("height: calc(100vh - 144px);"))
+        XCTAssertTrue(html.contains("scroll-snap-type: x mandatory;"))
         XCTAssertFalse(html.contains("scroll-behavior: smooth;"))
     }
 

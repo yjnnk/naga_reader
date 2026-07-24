@@ -67,15 +67,20 @@ private struct LayoutCSS {
     let readerLayout: String
 
     init(settings: ReadingSettings) {
+        let pagedReaderWidth = settings.columnWidth + (settings.pageMargin * 2)
         switch settings.readingMode {
         case .paged:
             bodyOverflow = "overflow: hidden;"
             readerLayout = """
+              width: min(100vw, \(pagedReaderWidth)px);
+              max-width: none;
               overflow-x: auto;
               overflow-y: hidden;
-              column-width: \(settings.columnWidth)px;
+              column-count: 1;
               column-gap: \(settings.pageMargin * 2)px;
+              column-fill: auto;
               height: calc(100vh - \(settings.pageMargin * 2)px);
+              scroll-snap-type: x mandatory;
               scrollbar-width: none;
             """
         case .scroll:

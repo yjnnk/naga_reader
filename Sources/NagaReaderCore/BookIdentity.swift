@@ -64,6 +64,19 @@ public struct ImportedBookRecord: Equatable, Codable, Identifiable {
         spineHrefs = try container.decodeIfPresent([String].self, forKey: .spineHrefs) ?? []
         chapters = try container.decodeIfPresent([EPUBChapter].self, forKey: .chapters) ?? []
     }
+
+    public func withParsedMetadata(_ parsedEPUB: ParsedEPUB) -> ImportedBookRecord {
+        ImportedBookRecord(
+            id: id,
+            title: parsedEPUB.title,
+            originalFileName: originalFileName,
+            storedURL: storedURL,
+            packagePath: parsedEPUB.packagePath,
+            manifest: parsedEPUB.manifest,
+            spineHrefs: parsedEPUB.spineHrefs,
+            chapters: parsedEPUB.chapters
+        )
+    }
 }
 
 public enum EPUBImportError: Error, Equatable, LocalizedError {
